@@ -1,0 +1,37 @@
+{% if produtos %}
+    {% for p in produtos %}
+    <tr class="linha-produto" title="Dê dois cliques na linha para ver os detalhes" style="cursor: pointer;">
+        <td>{{ p.filial }}</td>
+        <td>{{ p.cod_fabrica }}</td>
+        <td>{{ p.cod_barras }}</td>
+        <td>{{ p.cod_produto }}</td>
+        <td>{{ p.descricao }}</td>
+        
+        <!-- Badge da Unidade fiel ao original -->
+        <td>
+            <span class="badge" style="background: rgb(213, 43, 75); color: rgb(255, 255, 255); font-weight: 700; font-size: 1rem;">
+                {{ p.unidade }}
+            </span>
+        </td>
+        
+        <!-- Quantidade disponível em azul -->
+        <td style="color: rgb(75, 168, 213); font-weight: 700;">
+            {{ p.qt_disponivel }}
+        </td>
+        
+        <td>{{ p.qt_reservada }}</td>
+        
+        <!-- Quantidade bloqueada em vermelho -->
+        <td style="color: rgb(213, 43, 75); font-weight: 700;">
+            {{ p.qt_bloqueada }}
+        </td>
+        
+        <td>{{ p.ultima_entrada or '' }}</td>
+        <td>{{ p.ultima_saida or '' }}</td>
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr>
+        <td colspan="11" class="text-center text-muted p-4">Nenhum produto encontrado para os filtros informados.</td>
+    </tr>
+{% endif %}
