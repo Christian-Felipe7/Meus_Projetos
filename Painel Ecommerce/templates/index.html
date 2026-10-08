@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rymo - Painel Ecommerce</title>
+    
+    <link rel="icon" type="image/svg+xml" href="/static/icon-rymo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+</head>
+<body hx-ext="response-targets" hx-boost="true">
+    <div class="app-shell">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar glass-panel">
+            <div class="flex flex-col items-center">
+                <img src="/static/logo-rymo.png" alt="Rymo" style="width: 120px; margin-bottom: 8px;">
+                <p class="text-xs font-bold text-dimmed mt-sm tracking-widest">PAINEL ECOMMERCE</p>
+            </div>
+            
+            <nav class="flex flex-col gap-sm">
+                <a href="/" class="btn btn-light-blue justify-start gap-sm w-full"><i class="ti ti-clipboard-list"></i> Pedidos</a>
+                <a href="/dashboard" class="btn justify-start gap-sm w-full text-dimmed hover:bg-slate-100" style="background: transparent;"><i class="ti ti-chart-bar"></i> Dashboard</a>
+            </nav>
+
+            <div class="flex flex-col gap-md">
+                <div class="neumo-card text-center" style="padding: 1rem;">
+                    <h3 class="font-bold text-sm" style="margin: 0;">Consulta de Estoque</h3>
+                    <p class="text-xs text-dimmed mt-sm mb-md">Acesse a consulta de produtos.</p>
+                    <a href="http://192.168.0.183:9494" target="_blank" class="btn btn-light-blue w-full">Acessar</a>
+                </div>
+
+                <div class="neumo-card">
+                    <div class="flex items-center gap-sm mb-md">
+                        <div style="width: 40px; height: 40px; background: var(--rymo-primary); border-radius: 50%; display: grid; place-items: center; color: white; font-weight: bold;">
+                            {{ user.nome[0] }}
+                        </div>
+                        <div style="overflow: hidden;">
+                            <p class="text-sm font-bold truncate" style="margin: 0;">{{ user.nome }}</p>
+                            <p class="text-xs text-dimmed truncate" style="margin: 0;">{{ user.setor }}</p>
+                        </div>
+                    </div>
+                    <a href="/logout" hx-boost="false" class="btn w-full" style="color: #dc2626; background-color: #fef2f2; border: 1px solid #fecaca; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#fee2e2'" onmouseout="this.style.backgroundColor='#fef2f2'">Sair da Sessão</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="flex justify-between items-end">
+                <div>
+                    <p class="text-sm font-bold" style="color: var(--rymo-primary); margin: 0;">Boa tarde, {{ user.nome.title() }} 👋 <br><span class="text-dimmed" style="font-weight: 500;">Setor: {{ user.setor.title() }}</span></p>
+                    <h1 class="title-1">Central de Pedidos</h1>
+                    <p class="text-dimmed" style="margin: 4px 0 0 0;">Monitore a operação do E-commerce em um só lugar</p>
+                </div>
+                <div class="header-clock-card">
+                    <div class="flex justify-between items-center gap-xs text-sm font-bold mb-md" style="justify-content: flex-end;">
+                        <i class="ti ti-map-pin"></i> Manaus - AM
+                    </div>
+                    <div class="flex items-center gap-sm" style="justify-content: flex-end;">
+                        <i class="ti ti-clock" style="font-size: 1.5rem;"></i>
+                        <span id="clock-time" style="font-size: 2.5rem; font-weight: 900; line-height: 1;">00:00<span style="font-size: 1rem; opacity: 0.7; margin-left: 4px;">00</span></span>
+                    </div>
+                    <p id="clock-date" class="text-xs mt-sm" style="opacity: 0.85; font-weight: 500; margin-bottom: 0;">Carregando...</p>
+                </div>
+            </header>
+
+            <!-- KPI CARDS -->
+            <div class="kpi-grid">
+                <div class="neumo-card cursor-pointer transition-all duration-200 kpi-filter" id="card-ALL" onclick="handleKpiClick('ALL')" style="height: 120px;">
+                    <p class="text-[11px] font-bold text-dimmed uppercase">Total no Período</p>
+                    <p class="title-3" id="kpi-total">0</p>
+                    <i class="ti ti-box" style="color: var(--rymo-primary); font-size: 1.5rem;"></i>
+                </div>
+                <div class="neumo-card cursor-pointer transition-all duration-200 kpi-filter" id="card-L" onclick="handleKpiClick('L')" style="height: 120px;">
+                    <p class="text-[11px] font-bold text-dimmed uppercase">Em Separação (L)</p>
+                    <p class="title-3" id="kpi-l">0</p>
+                    <i class="ti ti-clipboard" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                </div>
+                <div class="neumo-card cursor-pointer transition-all duration-200 kpi-filter" id="card-SEP" onclick="handleKpiClick('SEP')" style="height: 120px;">
+                    <p class="text-[11px] font-bold text-dimmed uppercase">Separados</p>
+                    <p class="title-3" id="kpi-sep">0</p>
+                    <i class="ti ti-clipboard-check" style="color: #10b981; font-size: 1.5rem;"></i>
+                </div>
+                <div class="neumo-card cursor-pointer transition-all duration-200 kpi-filter" id="card-F" onclick="handleKpiClick('F')" style="height: 120px;">
+                    <p class="text-[11px] font-bold text-dimmed uppercase">Faturados (F)</p>
+                    <p class="title-3" id="kpi-f">0</p>
+                    <i class="ti ti-receipt" style="color: #10b981; font-size: 1.5rem;"></i>
+                </div>
+                <div class="neumo-card cursor-pointer transition-all duration-200 kpi-filter" id="card-M" onclick="handleKpiClick('M')" style="height: 120px;">
+                    <p class="text-[11px] font-bold text-dimmed uppercase">Montados (M)</p>
+                    <p class="title-3" id="kpi-m">0</p>
+                    <i class="ti ti-truck" style="color: var(--rymo-primary); font-size: 1.5rem;"></i>
+                </div>
+                <div class="neumo-card cursor-pointer transition-all duration-200 kpi-filter" id="card-C" onclick="handleKpiClick('C')" style="height: 120px;">
+                    <p class="text-[11px] font-bold text-dimmed uppercase">Cancelados (C)</p>
+                    <p class="title-3" id="kpi-c">0</p>
+                    <i class="ti ti-ban" style="color: #ef4444; font-size: 1.5rem;"></i>
+                </div>
+                <div class="neumo-card cursor-pointer transition-all duration-200 kpi-filter" id="card-B" onclick="handleKpiClick('B')" style="height: 120px;">
+                    <p class="text-[11px] font-bold text-dimmed uppercase">Bloqueados (B)</p>
+                    <p class="title-3" id="kpi-b">0</p>
+                    <i class="ti ti-lock" style="color: #8b5cf6; font-size: 1.5rem;"></i>
+                </div>
+                <div class="neumo-card" style="height: 120px;">
+                    <p class="text-[11px] font-bold text-dimmed uppercase">Atualizado</p>
+                    <p class="title-3" style="font-size: 1.125rem;">{{ hora_atualizacao }}</p>
+                    <i class="ti ti-clock-arrow-down" style="color: var(--rymo-primary); font-size: 1.5rem;"></i>
+                </div>
+            </div>
+
+            <!-- BARRA DE FILTROS -->
+            <div class="glass-panel py-5 flex items-end gap-4 shadow-sm">
+                <div class="flex-1">
+                    <label class="block text-[11px] font-black text-slate-800 uppercase tracking-widest mb-2">Buscar pedido ou cliente</label>
+                    <div class="relative">
+                        <i class="ti ti-search absolute left-3 top-3 text-slate-400"></i>
+                        <input type="text" id="filter-search" placeholder="Número do pedido ou nome do cliente" onkeyup="updateDashboard()" class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 font-medium bg-white">
+                    </div>
+                </div>
+                <div class="w-40">
+                    <label class="block text-[11px] font-black text-slate-800 uppercase tracking-widest mb-2">Data início</label>
+                    <div class="relative">
+                        <input type="date" id="filter-start" onchange="updateDashboard()" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-600 font-medium bg-white outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="w-40">
+                    <label class="block text-[11px] font-black text-slate-800 uppercase tracking-widest mb-2">Data fim</label>
+                    <div class="relative">
+                        <input type="date" id="filter-end" onchange="updateDashboard()" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-600 font-medium bg-white outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="w-32">
+                    <label class="block text-[11px] font-black text-slate-800 uppercase tracking-widest mb-2">Posição</label>
+                    <select id="filter-status" onchange="updateDashboard()" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white font-medium outline-none focus:border-blue-500">
+                        <option value="">Todas</option>
+                        <option value="L">L</option>
+                        <option value="F">F</option>
+                        <option value="M">M</option>
+                        <option value="C">C</option>
+                        <option value="B">B</option>
+                    </select>
+                </div>
+                <button onclick="updateDashboard()" class="btn btn-primary" style="height: 2.6rem;">
+                    <i class="ti ti-filter mr-2"></i> Filtrar
+                </button>
+                <span class="badge badge-light-blue" style="height: 2.6rem;">Padrão: mês atual</span>
+            </div>
+
+            <!-- TABELA DE PEDIDOS -->
+            <div class="glass-panel">
+                <div class="flex justify-between items-center mb-md">
+                    <div>
+                        <h3 class="title-3">Fila de Operação</h3>
+                        <p class="text-sm font-bold text-blue-600 mt-1" id="visible-count">Processando pedidos...</p>
+                    </div>
+                    <button onClick="window.location.reload()" class="btn btn-light-blue gap-xs"><i class="ti ti-refresh"></i> Atualizar Dados</button>
+                </div>
+
+                <div class="table-container">
+                    <table class="mantine-table">
+                        <thead>
+                            <tr>
+                                <th>DATA</th>
+                                <th>PEDIDO</th>
+                                <th>POSIÇÃO</th>
+                                <th>CLIENTE</th>
+                                <th style="text-align: center;">VIAS</th>
+                                <th style="text-align: center;">STATUS</th>
+                                <th style="text-align: center;">AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-tbody">
+                            {% for order in orders %}
+                                {% include 'order_row.html' %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Contêiner do Modal -->
+    <div id="modal-container"></div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', { hour12: false });
+            const [hours, minutes, seconds] = timeString.split(':');
+            document.getElementById('clock-time').innerHTML = `${hours}:${minutes}<span style="font-size: 1rem; opacity: 0.7; margin-left: 4px;">${seconds}</span>`;
+            
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: '2-digit' };
+            let dateString = now.toLocaleDateString('pt-BR', options);
+            document.getElementById('clock-date').innerText = dateString.replace(/\b\w/g, l => l.toUpperCase());
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        let currentKpiFilter = 'INITIAL';
+
+        function setDefaultDates() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            const formatToInput = (date) => {
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            };
+
+            document.getElementById('filter-start').value = formatToInput(firstDay);
+            document.getElementById('filter-end').value = formatToInput(today);
+        }
+
+        function parseBrazilianDate(dateStr) {
+            if(!dateStr) return null;
+            const parts = dateStr.split('/');
+            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+        }
+
+        // MOTOR PRINCIPAL DE LÓGICA E FILTROS
+        function updateDashboard() {
+            const searchVal = document.getElementById('filter-search').value.toLowerCase();
+            const startVal = document.getElementById('filter-start').value;
+            const endVal = document.getElementById('filter-end').value;
+            const statusVal = document.getElementById('filter-status').value;
+
+            const startDate = startVal ? new Date(`${startVal}T00:00:00`) : null;
+            const endDate = endVal ? new Date(`${endVal}T23:59:59`) : null;
+
+            const rows = document.querySelectorAll('#orders-tbody tr');
+            
+            let L = 0, F = 0, M = 0, C = 0, B = 0, separados = 0, total = 0;
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const statusErp = row.getAttribute('data-status-erp');
+                const isSeparated = row.getAttribute('data-separated') === 'true';
+                const rowCliente = row.getAttribute('data-cliente');
+                const rowPedido = row.getAttribute('data-pedido');
+                const rowData = row.getAttribute('data-datarow');
+                
+                let siglaErp = 'P';
+                if(statusErp === 'Em Separação') siglaErp = 'L';
+                if(statusErp === 'Faturado') siglaErp = 'F';
+                if(statusErp === 'Montado') siglaErp = 'M';
+                if(statusErp === 'Cancelado') siglaErp = 'C';
+                if(statusErp === 'Bloqueado') siglaErp = 'B';
+
+                let matchesBaseFilters = true;
+
+                // Regra Busca
+                if (searchVal && !rowCliente.includes(searchVal) && !rowPedido.includes(searchVal)) {
+                    matchesBaseFilters = false;
+                }
+
+                // Regra Datas
+                if (startDate || endDate) {
+                    const rDate = parseBrazilianDate(rowData);
+                    if (rDate) {
+                        if (startDate && rDate < startDate) matchesBaseFilters = false;
+                        if (endDate && rDate > endDate) matchesBaseFilters = false;
+                    }
+                }
+
+                // SE PASSOU NO FILTRO GLOBAL, ALOCA NO CARD CORRETO E MÚTUO
+                if (matchesBaseFilters) {
+                    total++;
+                    let visualStatus = 'OUTROS';
+
+                    if (siglaErp === 'F') { 
+                        F++; 
+                        visualStatus = 'F'; 
+                    }
+                    else if (siglaErp === 'C') { 
+                        C++; 
+                        visualStatus = 'C'; 
+                    }
+                    else if (siglaErp === 'B') { 
+                        B++; 
+                        visualStatus = 'B'; 
+                    }
+                    else if (siglaErp === 'M') { 
+                        M++; 
+                        visualStatus = 'M'; 
+                    }
+                    else if (siglaErp === 'L') {
+                        if (isSeparated) { 
+                            // Sai do 'L' e cai em Separados
+                            separados++; 
+                            visualStatus = 'SEP'; 
+                        } else { 
+                            // Permanece em 'L'
+                            L++; 
+                            visualStatus = 'L'; 
+                        }
+                    }
+                    
+                    // Injeta a inteligência resolvida de volta na linha para filtragem fácil
+                    row.setAttribute('data-visual-status', visualStatus);
+                }
+
+                // AVALIAÇÃO DE EXIBIÇÃO NA TABELA
+                let showInTable = matchesBaseFilters;
+
+                if (showInTable) {
+                    const vStatus = row.getAttribute('data-visual-status');
+
+                    // Regra dos Cards Clicáveis
+                    if (currentKpiFilter === 'INITIAL') {
+                        if (vStatus === 'F' || vStatus === 'C') showInTable = false;
+                    } 
+                    else if (currentKpiFilter !== 'ALL') {
+                        if (vStatus !== currentKpiFilter) showInTable = false;
+                    }
+
+                    // Regra do Dropdown (baseada na sigla do ERP)
+                    if (statusVal && siglaErp !== statusVal) {
+                        showInTable = false;
+                    }
+                }
+
+                row.style.display = showInTable ? '' : 'none';
+                if(showInTable) visibleCount++;
+            });
+
+            // ATUALIZA DOM DOS CARDS
+            document.getElementById('kpi-total').innerText = total;
+            document.getElementById('kpi-l').innerText = L;
+            document.getElementById('kpi-f').innerText = F;
+            document.getElementById('kpi-m').innerText = M;
+            document.getElementById('kpi-c').innerText = C;
+            document.getElementById('kpi-b').innerText = B;
+            document.getElementById('kpi-sep').innerText = separados;
+
+            document.getElementById('visible-count').innerText = `${visibleCount} pedidos listados nesta visualização`;
+        }
+
+        function handleKpiClick(filterType) {
+            currentKpiFilter = filterType;
+            
+            document.querySelectorAll('.kpi-filter').forEach(card => {
+                card.classList.remove('ring-4', 'ring-blue-500', 'bg-blue-50/40');
+            });
+            
+            if (filterType !== 'INITIAL') {
+                const activeCard = document.getElementById('card-' + filterType);
+                if(activeCard) activeCard.classList.add('ring-4', 'ring-blue-500', 'bg-blue-50/40');
+            }
+            
+            updateDashboard();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setDefaultDates();
+            handleKpiClick('INITIAL'); 
+        });
+
+        // Engatilha após retorno de HTMX (quando clica em Separar)
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            updateDashboard();
+        });
+    </script>
+</body>
+</html>

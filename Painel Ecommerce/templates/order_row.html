@@ -1,0 +1,88 @@
+<!-- Destaque visual: fundo amarelado forte caso haja uma anotação neste pedido. Atributos de dados ativam os KPIs. -->
+<tr id="row-{{ order.pedido }}" 
+    {% if oob %}hx-swap-oob="true"{% endif %}
+    data-status-erp="{{ order.status_erp }}" 
+    data-separated="{{ 'true' if order.is_separated else 'false' }}"
+    data-pedido="{{ order.pedido }}"
+    data-cliente="{{ order.cliente|lower }}"
+    data-datarow="{{ order.data }}"
+    class="transition-colors duration-200 {% if order.notes|length > 0 %} bg-amber-50/90 border-l-[6px] border-amber-400 hover:bg-amber-100/90 {% else %} hover:bg-slate-50/50 border-l-[6px] border-transparent {% endif %}">
+    
+    <!-- Campos Ocultos de Persistência (Incluindo Auditoria) -->
+    <input type="hidden" name="data" value="{{ order.data }}">
+    <input type="hidden" name="cliente" value="{{ order.cliente }}">
+    <input type="hidden" name="vias" value="{{ order.vias }}">
+    <input type="hidden" name="status_erp" value="{{ order.status_erp }}">
+    <input type="hidden" name="notes_json" value="{{ order.notes | tojson | forceescape }}">
+    <input type="hidden" name="current_state" value="{{ 'true' if order.is_separated else 'false' }}">
+    
+    <input type="hidden" name="separator_name" value="{{ order.separator_name }}">
+    <input type="hidden" name="separated_by_user" value="{{ order.separated_by_user }}">
+    <input type="hidden" name="separated_at" value="{{ order.separated_at }}">
+
+    <td class="text-dimmed font-bold">{{ order.data }}</td>
+    <td class="font-black">{{ order.pedido }}</td>
+    
+    <td><span class="badge badge-light-blue">{{ order.status_erp }}</span></td>
+    
+    <td class="truncate" style="max-width: 200px; font-weight: 600;" title="{{ order.cliente }}">{{ order.cliente }}</td>
+    <td style="text-align: center; font-weight: bold;">{{ order.vias }}</td>
+    
+    <!-- EXIBIÇÃO VISUAL DINÂMICA DO STATUS LOGÍSTICO -->
+    <td style="text-align: center;">
+        {% if order.status_erp == 'Faturado' %}
+            <span class="badge badge-light-green gap-xs"><i class="ti ti-receipt text-xs"></i> Faturado</span>
+        {% elif order.status_erp == 'Cancelado' %}
+            <span class="badge gap-xs" style="background-color: #fee2e2; color: #ef4444;"><i class="ti ti-ban text-xs"></i> Cancelado</span>
+        {% elif order.status_erp == 'Montado' %}
+            <span class="badge gap-xs" style="background-color: #ede9fe; color: #8b5cf6;"><i class="ti ti-truck text-xs"></i> Montado</span>
+        {% elif order.status_erp == 'Bloqueado' %}
+            <span class="badge gap-xs" style="background-color: #f1f5f9; color: #64748b;"><i class="ti ti-lock text-xs"></i> Bloqueado</span>
+        {% elif order.is_separated %}
+            <span class="badge badge-light-green gap-xs"><i class="ti ti-check text-xs"></i> Separado</span>
+        {% else %}
+            <!-- Exibição padrão para Posição 'L' (Em Separação) ou 'P' (Pendente) -->
+            <span class="badge badge-light-orange gap-xs"><i class="ti ti-box text-xs"></i> {{ order.status_erp }}</span>
+        {% endif %}
+    </td>
+    
+    <!-- AÇÕES -->
+    <td style="text-align: center;">
+        <div class="flex items-center justify-center gap-sm">
+            
+            <button type="button" class="btn btn-light-blue {% if order.notes|length > 0 %} bg-amber-200 text-amber-800 hover:bg-amber-300 {% endif %}" 
+                    style="height: 1.8rem; padding: 0 0.5rem;" 
+                    hx-post="/modal/{{ order.pedido }}" 
+                    hx-include="closest tr" 
+                    hx-target="#modal-container"
+                    title="Detalhes e Observações">
+                <i class="ti ti-file-description text-lg"></i>
+            </button>
+
+            <!-- CHECKBOX REATIVA E AUDITÁVEL (Com bloqueio inteligente) -->
+            <input type="checkbox"
+                   class="cursor-pointer shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                   style="width: 1.3rem; height: 1.3rem; accent-color: #10b981;"
+                   {% if order.is_separated %} checked {% endif %}
+                   {% if order.status_erp in ['Faturado', 'Cancelado'] %} disabled title="Pedido já {{ order.status_erp | lower }}" {% endif %}
+                   onclick="
+                     event.preventDefault();
+                     var isSep = {{ 'true' if order.is_separated else 'false' }};
+                     if (!isSep) {
+                         var nome = prompt('OBRIGATÓRIO: Digite o NOME de quem separou o material:');
+                         if (!nome || nome.trim() === '') {
+                             alert('Ação bloqueada. O nome do separador é obrigatório.');
+                             return false;
+                         }
+                         this.closest('tr').querySelector('input[name=separator_name]').value = nome.trim();
+                     }
+                     htmx.trigger(this, 'process-toggle');
+                   "
+                   hx-post="/toggle/{{ order.pedido }}"
+                   hx-trigger="process-toggle"
+                   hx-include="closest tr"
+                   hx-target="#row-{{ order.pedido }}"
+                   hx-swap="outerHTML">
+        </div>
+    </td>
+</tr>

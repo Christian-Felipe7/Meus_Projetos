@@ -1,0 +1,111 @@
+<div id="notes-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 transition-opacity">
+    <div class="bg-white p-6 rounded-2xl flex flex-col max-h-[95vh] w-full max-w-2xl shadow-2xl border border-slate-200">
+        
+        <div class="flex justify-between items-start mb-4 shrink-0">
+            <h3 class="title-3 text-slate-800">Detalhes <span class="text-blue-600">#{{ order.pedido }}</span></h3>
+            <button onclick="document.getElementById('notes-modal').remove()" class="text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full p-1 transition-colors">
+                <i class="ti ti-x text-xl block"></i>
+            </button>
+        </div>
+        
+        <div class="mb-4 p-4 bg-slate-50/80 rounded-xl border border-slate-200 shrink-0 shadow-inner">
+            <p class="text-sm text-slate-600 mb-1"><span class="font-bold">Cliente:</span> {{ order.cliente }}</p>
+            <p class="text-sm text-slate-600 mb-1"><span class="font-bold">Data Faturamento:</span> {{ order.data }}</p>
+            <p class="text-sm text-slate-600"><span class="font-bold">Posição ERP:</span> {{ order.status_erp }}</p>
+        </div>
+
+        {% if order.is_separated %}
+        <div class="mb-4 p-4 bg-emerald-50 rounded-xl border border-emerald-200 shrink-0 shadow-inner">
+            <h4 class="text-xs font-black text-emerald-700 mb-2 uppercase tracking-wider flex items-center gap-1"><i class="ti ti-check"></i> Dados da Separação</h4>
+            <p class="text-sm text-emerald-900 mb-1"><span class="font-bold">Separador Informado:</span> {{ order.separator_name }}</p>
+            <p class="text-xs text-emerald-700 mb-1"><span class="font-bold">Registrado por:</span> {{ order.separated_by_user }}</p>
+            <p class="text-xs text-emerald-700"><span class="font-bold">Data e Hora:</span> {{ order.separated_at }}</p>
+        </div>
+        {% endif %}
+
+        <!-- ÁREA CENTRAL COM ROLAGEM (ITENS + OBSERVAÇÕES) -->
+        <div class="overflow-y-auto flex-1 pr-2 mb-4 space-y-6">
+            
+            <!-- TABELA DE ITENS DO PEDIDO -->
+            <div>
+                <h4 class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider flex items-center gap-1"><i class="ti ti-packages"></i> Itens do Pedido</h4>
+                <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <table class="w-full text-left bg-white">
+                        <thead class="bg-slate-100 border-b border-slate-200">
+                            <tr>
+                                <th class="py-2 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Cód.</th>
+                                <th class="py-2 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Descrição</th>
+                                <th class="py-2 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Qtd.</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for item in items %}
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-2 px-3 text-xs font-bold text-slate-700">{{ item.codigo }}</td>
+                                <td class="py-2 px-3 text-xs text-slate-600 font-medium truncate max-w-[250px]" title="{{ item.descricao }}">{{ item.descricao }}</td>
+                                <td class="py-2 px-3 text-xs font-black text-slate-800 text-center">{{ item.quantidade }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="py-4 text-center text-xs text-slate-500 font-medium bg-slate-50">Nenhum item localizado no ERP.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- HISTÓRICO DE OBSERVAÇÕES -->
+            <div>
+                <h4 class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider flex items-center gap-1"><i class="ti ti-notes"></i> Histórico de Observações</h4>
+                {% if order.notes|length > 0 %}
+                    <div class="flex flex-col gap-3">
+                    {% for note in order.notes %}
+                        <div class="bg-amber-50 border border-amber-200/60 p-3 rounded-xl shadow-sm">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-amber-800 flex items-center gap-1"><i class="ti ti-user-circle"></i> {{ note.author }}</span>
+                                <span class="text-[10px] font-bold text-amber-600/70 flex items-center gap-1"><i class="ti ti-clock"></i> {{ note.time }}</span>
+                            </div>
+                            <p class="text-sm text-slate-800 leading-snug font-medium">{{ note.text }}</p>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <i class="ti ti-note text-2xl text-slate-300 block mb-1"></i>
+                        <p class="text-xs text-slate-500 font-medium">Nenhuma observação registrada.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div> <!-- FIM DA ROLAGEM -->
+
+        <details class="group border border-slate-200 rounded-xl bg-white overflow-hidden shrink-0 shadow-sm">
+            <summary class="cursor-pointer bg-slate-50 p-3 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors flex justify-between items-center list-none outline-none">
+                <span class="flex items-center gap-2"><i class="ti ti-plus text-blue-600"></i> Incluir nova observação</span>
+                <i class="ti ti-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            
+            <form hx-post="/notes/{{ order.pedido }}" hx-target="#modal-container" class="p-4 border-t border-slate-100 bg-white">
+                <input type="hidden" name="data" value="{{ order.data }}">
+                <input type="hidden" name="cliente" value="{{ order.cliente }}">
+                <input type="hidden" name="vias" value="{{ order.vias }}">
+                <input type="hidden" name="status_erp" value="{{ order.status_erp }}">
+                <input type="hidden" name="current_state" value="{{ order.is_separated }}">
+                <input type="hidden" name="notes_json" value="{{ order.notes | tojson | forceescape }}">
+                
+                <input type="hidden" name="separator_name" value="{{ order.separator_name }}">
+                <input type="hidden" name="separated_by_user" value="{{ order.separated_by_user }}">
+                <input type="hidden" name="separated_at" value="{{ order.separated_at }}">
+
+                <textarea name="new_note" rows="3" required placeholder="Digite a observação da logística aqui..." class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none mb-3 text-sm bg-slate-50"></textarea>
+                
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="btn bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs py-2 px-4 h-auto" onclick="document.getElementById('notes-modal').remove()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary shadow-lg shadow-blue-500/30 text-xs py-2 px-4 h-auto">Registrar</button>
+                </div>
+            </form>
+        </details>
+
+    </div>
+</div>

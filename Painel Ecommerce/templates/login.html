@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Rymo</title>
+    <link rel="icon" type="image/svg+xml" href="/static/icon-rymo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    
+    <div class="glass-panel w-full max-w-md p-10 flex flex-col items-center">
+        <!-- Logo Original Injetada Aqui -->
+        <img src="/static/logo-rymo.png" alt="Rymo Logo" class="mb-4" style="width: 140px;">
+        
+        <h2 class="title-3 text-slate-800 mb-1">Acesso ao Painel</h2>
+        <p class="text-sm text-dimmed mb-8 text-center">Utilize suas credenciais do Winthor para entrar.</p>
+
+        {% if error %}
+        <div class="w-full bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6 text-sm font-bold shadow-sm">
+            <i class="ti ti-alert-triangle mr-1"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/login" method="POST" class="w-full flex flex-col gap-md">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Usuário ou Matrícula</label>
+                <div class="relative">
+                    <i class="ti ti-user absolute left-3 top-3.5 text-slate-400 text-lg"></i>
+                    <input type="text" name="username" required autocomplete="off" placeholder="Ex: PEDRO.CARVALHO" 
+                           class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white/70 shadow-inner">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Senha Winthor</label>
+                <div class="relative">
+                    <i class="ti ti-lock absolute left-3 top-3.5 text-slate-400 text-lg"></i>
+                    <input type="password" name="password" required 
+                           class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white/70 shadow-inner">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full mt-sm py-3 text-base shadow-lg shadow-blue-500/30 tracking-wide">
+                Entrar no Sistema
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>
