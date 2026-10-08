@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/static/icon-rymo.svg">
+    <title>Consulta Estoque</title>
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Bootstrap 5 CSS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="root">
+        <!-- Navbar -->
+        <nav class="bg-company shadow navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="d-flex align-items-center navbar-brand" href="/">
+                    <img alt="Logo Rymo" height="42" class="me-2" src="/static/logoRymo.svg" style="object-fit: contain;">
+                </a>
+                <div class="navbar-collapse collapse" id="basic-navbar-nav">
+                    <div class="me-auto navbar-nav">
+                        <a href="http://192.168.0.183:9393/" target="_blank" class="nav-link">Pedidos E-commerce</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-4">
+            <div class="card shadow-sm p-4 mb-3 border-0">
+                <h2 class="mb-4 company-text" style="border-bottom: 3px solid; padding-bottom: 5px;">Consulta de Estoque</h2>
+                
+                <form class="mb-2" 
+                      hx-get="/api/v1/produtos/busca" 
+                      hx-target="#tabela-estoque" 
+                      hx-trigger="submit, input delay:800ms from:#campo-pesquisa, change from:select">
+                      
+                    <div class="row gy-3">
+                        <!-- Barra de Pesquisa Integrada (Omnibox) -->
+                        <div class="col-md-9 col-12">
+                            <label class="fw-bold mb-2 form-label">O que você está procurando?</label>
+                            <div class="input-group shadow-sm">
+                                <!-- Select acoplado ao input -->
+                                <select name="campo" class="form-select bg-light fw-semibold text-secondary border-end-0" style="max-width: 180px;" onchange="atualizarPlaceholder()">
+                                    <option value="DESCRICAO" selected>Descrição</option>
+                                    <option value="CODPROD">Cód. Produto</option>
+                                    <option value="CODFAB">Cód. Fábrica</option>
+                                    <option value="CODAUXILIAR">Cód. Barras</option>
+                                </select>
+                                <input id="campo-pesquisa" name="query" class="form-control border-start-0 ps-0" type="text" autocomplete="off" style="box-shadow: none;">
+                                <button type="submit" class="btn btn-primary px-4 fw-bold">Buscar</button>
+                            </div>
+                        </div>
+
+                        <!-- Filtro de Filial Isolado -->
+                        <div class="col-md-3 col-12">
+                            <label class="fw-bold mb-2 form-label">Filtrar por Filial:</label>
+                            <select name="filial" class="form-select shadow-sm">
+                                <option value="Todas">Todas as filiais</option>
+                                <option value="1">Filial X</option>
+                                <option value="2">Filial X</option>
+                                <option value="12">Filial X</option>
+                                <option value="16">Filial X</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-company shadow-sm mt-4 table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Filial</th>
+                            <th>Cód. Fábrica</th>
+                            <th>Cód. Barras</th>
+                            <th>Cód. Produto</th>
+                            <th>Descrição</th>
+                            <th>Unid.</th>
+                            <th>Qt. Disponível</th>
+                            <th>Qt. Reservada</th>
+                            <th>Qt. Bloqueada</th>
+                            <th>Última Entrada</th>
+                            <th>Última Saída</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-estoque">
+                        <tr><td colspan="11" class="text-center text-muted p-4">Aguardando pesquisa... Digite um termo acima.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Micro-interação de UX -->
+    <script>
+        function atualizarPlaceholder() {
+            const campoSelect = document.querySelector('select[name="campo"]');
+            const inputPesquisa = document.getElementById('campo-pesquisa');
+            
+            const dicasUX = {
+                'DESCRICAO': 'Digite o nome do produto (ex: PAPEL LASER)...',
+                'CODPROD': 'Use vírgulas para vários (ex: 244, 247, 249)...',
+                'CODFAB': 'Use vírgulas para vários (ex: COD1, COD2)...',
+                'CODAUXILIAR': 'Bipe ou digite o código de barras (EAN)...'
+            };
+            
+            inputPesquisa.placeholder = dicasUX[campoSelect.value] || 'Pesquisar...';
+            
+            // UX Premium: Ao mudar o seletor com o mouse, o cursor volta automaticamente para o input
+            inputPesquisa.focus();
+        }
+
+        // Executa a formatação inicial assim que a tela carrega
+        document.addEventListener('DOMContentLoaded', atualizarPlaceholder);
+    </script>
+</body>
+</html>
