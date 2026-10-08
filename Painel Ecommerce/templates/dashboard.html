@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Rymo</title>
+    
+    <link rel="icon" type="image/svg+xml" href="/static/icon-rymo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Chart.js para o Gráfico de Barras -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+</head>
+<body hx-ext="response-targets" hx-boost="true">
+    <div class="app-shell">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar glass-panel">
+            <div class="flex flex-col items-center">
+                <img src="/static/logo-rymo.png" alt="Rymo" style="width: 120px; margin-bottom: 8px;">
+                <p class="text-xs font-bold text-dimmed mt-sm tracking-widest">PAINEL ECOMMERCE</p>
+            </div>
+            
+            <nav class="flex flex-col gap-sm">
+                <a href="/" class="btn justify-start gap-sm w-full text-dimmed hover:bg-slate-100" style="background: transparent;"><i class="ti ti-clipboard-list"></i> Pedidos</a>
+                <a href="/dashboard" class="btn btn-light-blue justify-start gap-sm w-full"><i class="ti ti-chart-bar"></i> Dashboard</a>
+            </nav>
+
+            <div class="flex flex-col gap-md">
+                <div class="neumo-card text-center" style="padding: 1rem;">
+                    <h3 class="font-bold text-sm" style="margin: 0;">Consulta de Estoque</h3>
+                    <p class="text-xs text-dimmed mt-sm mb-md">Acesse a consulta de produtos.</p>
+                    <a href="http://192.168.0.183:9494" target="_blank"><button class="btn btn-light-blue w-full">Acessar</button></a>
+                </div>
+
+                <div class="neumo-card">
+                    <div class="flex items-center gap-sm mb-md">
+                        <div style="width: 40px; height: 40px; background: var(--rymo-primary); border-radius: 50%; display: grid; place-items: center; color: white; font-weight: bold;">
+                            {{ user.nome[0] }}
+                        </div>
+                        <div style="overflow: hidden;">
+                            <p class="text-sm font-bold truncate" style="margin: 0;">{{ user.nome }}</p>
+                            <p class="text-xs text-dimmed truncate" style="margin: 0;">{{ user.setor }}</p>
+                        </div>
+                    </div>
+                    <a href="/logout" hx-boost="false" class="btn w-full" style="color: #dc2626; background-color: #fef2f2; border: 1px solid #fecaca; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#fee2e2'" onmouseout="this.style.backgroundColor='#fef2f2'">Sair da Sessão</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="flex justify-between items-end">
+                <div class="flex items-center gap-sm mb-1">
+                    <i class="ti ti-calendar-stats text-blue-600 text-3xl"></i>
+                    <div>
+                        <p class="text-sm font-bold" style="color: var(--rymo-primary); margin: 0;">Dashboard Ecommerce</p>
+                        <h1 class="title-1" style="font-size: 1.875rem;">Indicadores Operacionais</h1>
+                        <p class="text-dimmed text-sm" style="margin: 0;">Acompanhe gargalos e pontos de atenção da operação Ecommerce.</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- FILTRO DE PERÍODO -->
+            <div class="glass-panel py-4 flex flex-col gap-2 shadow-sm">
+                <label class="block text-sm font-black text-slate-800">Período de análise</label>
+                <div class="flex items-end gap-4">
+                    <div class="w-48">
+                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Data Inicial</label>
+                        <input type="date" id="dash-start" onchange="processDashboard()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 font-medium bg-white outline-none focus:border-blue-500">
+                    </div>
+                    <div class="w-48">
+                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Data Final</label>
+                        <input type="date" id="dash-end" onchange="processDashboard()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 font-medium bg-white outline-none focus:border-blue-500">
+                    </div>
+                    <span class="badge badge-light-blue" style="height: 2.25rem;">Padrão: mês atual</span>
+                </div>
+            </div>
+
+            <!-- CARDS DE MÉTRICAS (Igual ao Painel Antigo) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="neumo-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-2 rounded-xl bg-green-100 text-green-600"><i class="ti ti-circle-check text-2xl"></i></div>
+                        <p class="text-4xl font-black text-slate-900" id="dash-ok">0</p>
+                    </div>
+                    <h4 class="font-bold text-slate-800 text-lg">Dentro do prazo</h4>
+                    <p class="text-xs text-dimmed mt-1 mb-4">Pedidos faturados em menos de 3 dias.</p>
+                    <span class="badge badge-light-green w-max text-[10px]">VER PEDIDOS</span>
+                </div>
+
+                <div class="neumo-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-2 rounded-xl bg-orange-100 text-orange-600"><i class="ti ti-alert-triangle text-2xl"></i></div>
+                        <p class="text-4xl font-black text-slate-900" id="dash-delay-fat">0</p>
+                    </div>
+                    <h4 class="font-bold text-slate-800 text-lg">Faturados com atraso</h4>
+                    <p class="text-xs text-dimmed mt-1 mb-3">Pedidos que levaram 3 dias ou mais para faturar.</p>
+                    <div class="flex gap-2">
+                        <span class="badge badge-light-orange w-max text-[10px]" id="dash-max-delay">Maior: 0 dias</span>
+                        <span class="badge bg-yellow-100 text-yellow-700 w-max text-[10px]" id="dash-avg-delay">Média: 0 dias</span>
+                    </div>
+                </div>
+
+                <div class="neumo-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-2 rounded-xl bg-yellow-100 text-yellow-600"><i class="ti ti-package text-2xl"></i></div>
+                        <p class="text-4xl font-black text-slate-900" id="dash-delay-sep">0</p>
+                    </div>
+                    <h4 class="font-bold text-slate-800 text-lg">Separação atrasada</h4>
+                    <p class="text-xs text-dimmed mt-1 mb-4">Pedidos em separação há 3 dias ou mais.</p>
+                    <span class="badge bg-yellow-100 text-yellow-700 w-max text-[10px]">VER PEDIDOS</span>
+                </div>
+
+                <div class="neumo-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-2 rounded-xl bg-green-100 text-green-600"><i class="ti ti-ban text-2xl"></i></div>
+                        <p class="text-4xl font-black text-slate-900" id="dash-blocked">0</p>
+                    </div>
+                    <h4 class="font-bold text-slate-800 text-lg">Pedidos bloqueados</h4>
+                    <p class="text-xs text-dimmed mt-1 mb-4">Pedidos Ecommerce atualmente bloqueados.</p>
+                    <span class="badge badge-light-green w-max text-[10px]">VER PEDIDOS</span>
+                </div>
+
+                <div class="neumo-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-2 rounded-xl bg-green-100 text-green-600"><i class="ti ti-alert-triangle text-2xl"></i></div>
+                        <p class="text-4xl font-black text-slate-900" id="dash-blocked-crit">0</p>
+                    </div>
+                    <h4 class="font-bold text-slate-800 text-lg">Bloqueios críticos</h4>
+                    <p class="text-xs text-dimmed mt-1 mb-4">Pedidos bloqueados há 3 dias ou mais.</p>
+                    <span class="badge badge-light-green w-max text-[10px]">VER PEDIDOS</span>
+                </div>
+
+            </div>
+
+            <!-- GRÁFICO RECHARTS/CHART.JS -->
+            <div class="glass-panel">
+                <h3 class="title-3 mb-1">Situação Atual dos Pedidos</h3>
+                <p class="text-sm text-dimmed mb-2">Distribuição dos pedidos por status no período selecionado.</p>
+                <p class="text-sm font-bold text-blue-600 mb-6" id="dash-chart-total">Total analisado: 0 pedidos</p>
+                
+                <div class="w-full h-80 relative">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Carrega os dados serializados do Python
+        const rawOrders = {{ orders_json | safe }};
+        let statusChartInstance = null;
+
+        function setMonthDates() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            const format = (d) => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+
+            document.getElementById('dash-start').value = format(firstDay);
+            document.getElementById('dash-end').value = format(today);
+        }
+
+        function parseBrDate(str) {
+            if(!str) return null;
+            const parts = str.split('/');
+            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+        }
+
+        function calculateDaysDiff(orderDate) {
+            const today = new Date();
+            // Diferença em milissegundos convertida para dias
+            const diffTime = Math.abs(today - orderDate);
+            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function processDashboard() {
+            const startVal = document.getElementById('dash-start').value;
+            const endVal = document.getElementById('dash-end').value;
+
+            const startDate = startVal ? new Date(`${startVal}T00:00:00`) : null;
+            const endDate = endVal ? new Date(`${endVal}T23:59:59`) : null;
+
+            let inTime = 0, lateFat = 0, lateSep = 0, block = 0, critBlock = 0;
+            let sumDelay = 0;
+            let maxDelay = 0;
+
+            let countF = 0, countL = 0, countM = 0, countC = 0, countB = 0;
+
+            rawOrders.forEach(order => {
+                const oDate = parseBrDate(order.data);
+                
+                // Filtro de Período
+                if (startDate && oDate < startDate) return;
+                if (endDate && oDate > endDate) return;
+
+                const daysDiff = calculateDaysDiff(oDate);
+                const st = order.status_erp;
+
+                if (st === 'Faturado') {
+                    countF++;
+                    if (daysDiff < 3) inTime++;
+                    else {
+                        lateFat++;
+                        sumDelay += daysDiff;
+                        if (daysDiff > maxDelay) maxDelay = daysDiff;
+                    }
+                }
+                if (st === 'Em Separação') {
+                    countL++;
+                    if (daysDiff >= 3) lateSep++;
+                }
+                if (st === 'Montado') countM++;
+                if (st === 'Cancelado') countC++;
+                if (st === 'Bloqueado') {
+                    countB++;
+                    block++;
+                    if (daysDiff >= 3) critBlock++;
+                }
+            });
+
+            // Atualiza os Textos dos Cards
+            document.getElementById('dash-ok').innerText = inTime;
+            document.getElementById('dash-delay-fat').innerText = lateFat;
+            document.getElementById('dash-delay-sep').innerText = lateSep;
+            document.getElementById('dash-blocked').innerText = block;
+            document.getElementById('dash-blocked-crit').innerText = critBlock;
+            
+            document.getElementById('dash-max-delay').innerText = `Maior: ${maxDelay} dias`;
+            const avgDelay = lateFat > 0 ? (sumDelay / lateFat).toFixed(1) : 0;
+            document.getElementById('dash-avg-delay').innerText = `Média: ${avgDelay} dias`;
+
+            document.getElementById('dash-chart-total').innerText = `Total analisado: ${countF + countL + countM + countC + countB} pedidos`;
+
+            // Atualiza o Gráfico de Barras Chart.js
+            updateChart([countF, countL, countM, countC, countB]);
+        }
+
+        function updateChart(dataCounts) {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            if (statusChartInstance) {
+                statusChartInstance.destroy();
+            }
+
+            statusChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Faturados', 'Em Separação', 'Montados', 'Cancelados', 'Bloqueados'],
+                    datasets: [{
+                        label: 'Qtd de Pedidos',
+                        data: dataCounts,
+                        backgroundColor: [
+                            '#22c55e', // Verde (Faturado)
+                            '#3b82f6', // Azul (Em Separação)
+                            '#8b5cf6', // Roxo (Montado)
+                            '#ef4444', // Vermelho (Cancelado)
+                            '#f59e0b'  // Amarelo (Bloqueado)
+                        ],
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#e2e8f0', borderDash: [5, 5] }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setMonthDates();
+            processDashboard();
+        });
+    </script>
+</body>
+</html>
