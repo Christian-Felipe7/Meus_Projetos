@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+oracledb
+python-dotenv
+jinja2
+python-multipart
