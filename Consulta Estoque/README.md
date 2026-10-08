@@ -20,7 +20,7 @@ Aplicação web desenhada para o rastreio e validação instantânea de disponib
 
 ### Frontend
 
-- HTML e CSS[cite: 14]
+- HTML e CSS.
 - JavaScript (com HTMX para atualizações dinâmicas de interface).
 
 ---
