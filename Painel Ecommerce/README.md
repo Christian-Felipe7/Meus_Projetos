@@ -1,9 +1,42 @@
-🛒 **Painel E-commerce (Sistema de Gestão e Separação)**
+# Painel E-commerce – Sistema de Gestão e Separação
 
-* **Objetivo e Impacto:** Aplicação web desenhada para centralizar e otimizar o processo de separação e controle de pedidos provenientes do e-commerce. Resolve o problema de rastreabilidade e lentidão na etapa de expedição de mercadorias, centralizando e acelerando consideravelmente o tempo de operação.
+Aplicação web corporativa desenhada para centralizar e otimizar o processo de separação e controle de pedidos provenientes do e-commerce, resolvendo problemas de rastreabilidade e lentidão na expedição.
 
+---
 
-* **Tecnologias Utilizadas:** Backend assíncrono desenvolvido em **Python** utilizando o framework **FastAPI** e o servidor ASGI **Uvicorn**. Interface web dinâmica construída com **HTML, CSS e JavaScript**. Integração direta ao ERP via **Oracle SQL** e persistência de estado local gerenciada com **SQLite**.
+## 🔗 Ambiente e Acesso
 
+* **Ambiente de Produção:** Intranet Corporativa (Uso interno)
 
-* **Arquitetura de Dados (Padrão Sidecar):** O sistema foi arquitetado para consumir as informações vitais diretamente do banco de dados Oracle do ERP. No entanto, para gerenciar os estados de fila e transições de pedidos sem sobrecarregar o ERP, implementei uma abordagem "sidecar" utilizando um banco de dados local em arquivo em **SQlite**.
+---
+
+## Tecnologias Utilizadas
+
+### Backend
+
+* Python + FastAPI
+* Uvicorn (Servidor ASGI assíncrono)
+* Integração direta ao ERP via Oracle SQL
+* SQLite (Persistência de estado local)
+
+### Frontend
+
+* HTML
+* CSS
+* JavaScript (Interface web dinâmica)
+
+---
+
+## Arquitetura de Dados (Padrão Sidecar)
+
+* **Consumo de Dados ERP:** Leitura das informações vitais diretamente do banco de dados corporativo Oracle.
+* **Gerenciamento de Fila (Sidecar):** Controle dos estados de fila e transições de pedidos implementado de forma autônoma em um banco de dados local em arquivo (SQLite).
+* **Benefício da Arquitetura:** Garante alta performance no rastreio logístico sem sobrecarregar o servidor do ERP principal com atualizações de estado.
+
+---
+
+## Funcionalidades e Impacto
+
+* Centralização do fluxo de pedidos e-commerce.
+* Rastreabilidade ponta a ponta na esteira de expedição.
+* Aceleração considerável do tempo de operação e triagem de mercadorias.
