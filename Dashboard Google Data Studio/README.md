@@ -36,3 +36,6 @@ Painel executivo fictício de Business Intelligence desenvolvido para monitorar 
 - **Diagnóstico de Hardware (Scatter Plot):** Gráfico de dispersão correlacionando modelos de smartphones com métricas críticas de sobreaquecimento (Peak Temp) e drenagem de bateria (Battery Drain).
 - **KPIs Executivos e Filtros Globais:** Visão instantânea da saúde geral da frota de testes, incluindo a nota de satisfação do usuário (CSAT Score).
 - **Impacto de Negócio:** O dashboard permite isolar anomalias rapidamente — como a regressão térmica identificada em processadores Exynos durante a Beta 2 — comprovando visualmente a correção do problema na versão final (RC1) e embasando a aprovação do software para lançamento com segurança estatística.
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/054357d6-ffab-47a9-aa78-8e0392f10624" />
+
