@@ -1,5 +1,5 @@
 # Meus_Projetos 💻
-## 🎯 **Impacto**: Aplicações atualmente em produção, desenvolvidas para resolver gargalos operacionais reais do negócio.
+## 🎯Aplicações atualmente em produção, desenvolvidas para resolver gargalos operacionais reais do negócio:
 🛒 **Painel E-commerce (Sistema de Gestão e Separação)**
 
 🔍 **Consulta Estoque (Motor de Busca de SKUs)**
