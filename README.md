@@ -4,7 +4,7 @@
 
 🔍 **Consulta Estoque (Motor de Busca de SKUs)**
 
-## Projetos Acadêmicos
+## 📚Projetos Acadêmicos
 📊 **Dashboard Google Studio (Monitoramento de testes Android)**
 
 
