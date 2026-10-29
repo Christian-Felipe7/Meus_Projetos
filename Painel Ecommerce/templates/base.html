@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Rymo - Painel Ecommerce{% endblock %}</title>
+    <title>{% block title %}Painel Ecommerce{% endblock %}</title>
     
     <link rel="icon" type="image/svg+xml" href="/static/icon-rymo.svg">
     <link rel="stylesheet" href="/static/style.css">
@@ -18,7 +18,7 @@
         <!-- SIDEBAR UNIFICADA -->
         <aside class="sidebar glass-panel">
             <div class="flex flex-col items-center">
-                <img src="/static/logo-rymo.png" alt="Rymo" class="sidebar-logo">
+                <img src="/static/logo-rymo.png" alt="Logo" class="sidebar-logo">
                 <p class="text-xs font-bold text-dimmed mt-2 tracking-widest">PAINEL ECOMMERCE</p>
             </div>
             
@@ -35,7 +35,7 @@
                 <div class="neumo-card text-center p-4">
                     <h3 class="font-bold text-sm m-0">Consulta de Estoque</h3>
                     <p class="text-xs text-dimmed mt-2 mb-4">Acesse a consulta de produtos.</p>
-                    <a href="http://192.168.0.183:9494/estoque/" target="_blank" class="btn btn-light-blue w-full">Acessar</a>
+                    <a href="{{ estoque_url }}" target="_blank" class="btn btn-light-blue w-full">Acessar</a>
                 </div>
 
                 <div class="neumo-card">
