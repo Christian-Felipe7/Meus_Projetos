@@ -10,7 +10,7 @@
         
         <div class="mb-4 p-4 bg-slate-50/80 rounded-xl border border-slate-200 shrink-0 shadow-inner">
             <p class="text-sm text-slate-600 mb-1"><span class="font-bold">Cliente:</span> {{ order.cliente }}</p>
-            <p class="text-sm text-slate-600 mb-1"><span class="font-bold">Data Faturamento:</span> {{ order.data }}</p>
+            <p class="text-sm text-slate-600 mb-1"><span class="font-bold">Data Emissão:</span> {{ order.data }}</p>
             <p class="text-sm text-slate-600"><span class="font-bold">Posição ERP:</span> {{ order.status_erp }}</p>
         </div>
 
@@ -23,10 +23,8 @@
         </div>
         {% endif %}
 
-        <!-- ÁREA CENTRAL COM ROLAGEM (ITENS + OBSERVAÇÕES) -->
         <div class="overflow-y-auto flex-1 pr-2 mb-4 space-y-6">
             
-            <!-- TABELA DE ITENS DO PEDIDO -->
             <div>
                 <h4 class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider flex items-center gap-1"><i class="ti ti-packages"></i> Itens do Pedido</h4>
                 <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -55,7 +53,6 @@
                 </div>
             </div>
 
-            <!-- HISTÓRICO DE OBSERVAÇÕES -->
             <div>
                 <h4 class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider flex items-center gap-1"><i class="ti ti-notes"></i> Histórico de Observações</h4>
                 {% if order.notes|length > 0 %}
@@ -78,7 +75,7 @@
                 {% endif %}
             </div>
 
-        </div> <!-- FIM DA ROLAGEM -->
+        </div>
 
         <details class="group border border-slate-200 rounded-xl bg-white overflow-hidden shrink-0 shadow-sm">
             <summary class="cursor-pointer bg-slate-50 p-3 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors flex justify-between items-center list-none outline-none">
@@ -88,6 +85,7 @@
             
             <form hx-post="/notes/{{ order.pedido }}" hx-target="#modal-container" class="p-4 border-t border-slate-100 bg-white">
                 <input type="hidden" name="data" value="{{ order.data }}">
+                <input type="hidden" name="dtfat" value="{{ order.dtfat }}">
                 <input type="hidden" name="cliente" value="{{ order.cliente }}">
                 <input type="hidden" name="vias" value="{{ order.vias }}">
                 <input type="hidden" name="status_erp" value="{{ order.status_erp }}">
