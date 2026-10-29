@@ -1,0 +1,14 @@
+# Configurações de Conexão Oracle (ERP WinThor)
+ORACLE_HOST=seu_host_oracle
+ORACLE_PORT=1521
+ORACLE_SERVICE_NAME=seu_service_name
+ORACLE_USER=seu_usuario
+ORACLE_PASSWORD=sua_senha
+
+# Função de descriptografia de senha do ERP (Ex: SCHEMA.FUNCAO)
+ORACLE_DECRYPT_FUNC=SCHEMA.DECRYPT_FUNCTION
+
+# Configurações da Aplicação e Integrações Internas
+APP_PORT=9392
+SESSION_COOKIE_NAME=ecommerce_auth_session
+ESTOQUE_APP_URL=http://seu-servidor-interno:porta/estoque/
