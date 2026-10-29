@@ -1,12 +1,19 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Form, Response
+from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
+from dotenv import load_dotenv
 import database
 import json
 import os
+
+load_dotenv()
+
+COOKIE_NAME = os.getenv("SESSION_COOKIE_NAME", "ecommerce_auth_session")
+ESTOQUE_URL = os.getenv("ESTOQUE_APP_URL", "#")
+APP_PORT = int(os.getenv("APP_PORT", 9392))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,8 +26,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 def get_current_user(request: Request):
-    # Dica de portfólio: Nome genérico para o cookie, ocultando a empresa original
-    user_cookie = request.cookies.get("app_auth")
+    user_cookie = request.cookies.get(COOKIE_NAME)
     if user_cookie:
         try:
             return json.loads(user_cookie)
@@ -40,14 +46,14 @@ async def process_login(request: Request, username: str = Form(default=""), pass
     user = await database.authenticate_user(username, password)
     if user:
         response = RedirectResponse(url="/", status_code=303)
-        response.set_cookie(key="app_auth", value=json.dumps(user), httponly=True, max_age=43200)
+        response.set_cookie(key=COOKIE_NAME, value=json.dumps(user), httponly=True, max_age=43200)
         return response
     return templates.TemplateResponse(request=request, name="login.html", context={"error": "Usuário ou senha inválidos."})
 
 @app.get("/logout")
 async def logout():
     response = RedirectResponse(url="/login", status_code=303)
-    response.delete_cookie("app_auth")
+    response.delete_cookie(COOKIE_NAME)
     return response
 
 # ==========================================
@@ -65,6 +71,7 @@ def reconstruct_order(pedido_id: str, form_data) -> dict:
     return {
         "pedido": pedido_id,
         "data": form_data.get("data", ""),
+        "dtfat": form_data.get("dtfat", ""),
         "cliente": form_data.get("cliente", ""),
         "vias": form_data.get("vias", ""),
         "status_erp": form_data.get("status_erp", ""),
@@ -87,7 +94,12 @@ async def index(request: Request):
     
     return templates.TemplateResponse(
         request=request, name="index.html",
-        context={"orders": orders, "hora_atualizacao": datetime.now().strftime("%H:%M:%S"), "user": user}
+        context={
+            "orders": orders, 
+            "user": user,
+            "active_page": "pedidos",
+            "estoque_url": ESTOQUE_URL
+        }
     )
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -100,7 +112,12 @@ async def dashboard_page(request: Request):
     
     return templates.TemplateResponse(
         request=request, name="dashboard.html",
-        context={"orders_json": orders_json, "hora_atualizacao": datetime.now().strftime("%H:%M:%S"), "user": user}
+        context={
+            "orders_json": orders_json, 
+            "user": user,
+            "active_page": "dashboard",
+            "estoque_url": ESTOQUE_URL
+        }
     )
 
 @app.post("/toggle/{order_id}")
@@ -134,8 +151,6 @@ async def get_modal(request: Request, order_id: str):
     if not get_current_user(request): return HTMLResponse("Sessão expirada", status_code=401)
     form_data = await request.form()
     order = reconstruct_order(order_id, form_data)
-    
-    # Busca itens do pedido no banco legando/ERP
     items = await database.get_order_items(order_id)
     
     return templates.TemplateResponse(request=request, name="modal.html", context={"order": order, "items": items})
@@ -154,9 +169,9 @@ async def save_notes(request: Request, order_id: str):
         order["notes"].append({"author": user["nome"], "time": now_str, "text": new_note})
         database.save_order_notes(order_id, json.dumps(order["notes"]))
         
-    return templates.TemplateResponse(request=request, name="modal_and_row.html", context={"order": order, "oob": True})
+    items = await database.get_order_items(order_id)
+    return templates.TemplateResponse(request=request, name="modal_and_row.html", context={"order": order, "items": items, "oob": True})
 
 if __name__ == "__main__":
     import uvicorn
-    # A porta pode ser configurada via variáveis de ambiente no deploy de produção
-    APP_
+    uvicorn.run("main:app", host="0.0.0.0", port=APP_PORT)
